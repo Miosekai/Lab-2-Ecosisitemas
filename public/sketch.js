@@ -1,54 +1,59 @@
-let canvas;
-let SPRITE_PATH_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/';
-let bulbasaur = null;
-let charmander = null;
-let squirtle = null;
+const pokemonContainer = document.querySelector(".pokemon-container")
 
-function setup() {
-    frameRate(60);
-}
+function fetchPokemon(id) {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`)
+      .then((res) => res.json())
+      .then((data) => {
+        createPokemon(data);
+      });
+  }
 
-function draw() {
-    //background(0, 50);
-    background(0);
-    newCursor();
-
-    if(bulbasaur != null){
-        fill(255);
-        textSize(24);
-        text(bulbasaur.name, 140, 100);
-        image(bulbasaur.pImage, 50, 100, 100, 100);
+function fetchPokemons(number) {
+    for (let i = 1; i <= number; i++) {
+        fetchPokemon(i);
     }
-    
 }
 
-function mouseClicked(){
-    getPokemonList()
+function createPokemon(pokemon) {
+    const card = document.createElement("div");
+    card.classList.add("pokemon-block");
+    console.log (pokemon);
+  
+    const spriteContainer = document.createElement("div");
+    spriteContainer.classList.add("img-container");
+  
+    const sprite = document.createElement("img");
+    sprite.src = pokemon.sprites.front_default;
+  
+    spriteContainer.appendChild(sprite);
+  
+    const number = document.createElement("p");
+    number.textContent = `#${pokemon.id.toString().padStart(3, 0)}`;
+  
+    const name = document.createElement("p");
+    name.classList.add("name");
+    name.textContent = pokemon.name;
+
+    const height = document.createElement("p");
+    height.classList.add("height");
+    height.textContent = `Altura: ${pokemon.height/ 10}m`;
+
+    const weight = document.createElement("p");
+    weight.classList.add("weight");
+    weight.textContent = `Peso: ${pokemon.weight/ 10}kg`;
+
+    const hp = document.createElement("p");
+    hp.classList.add("hp");
+    hp.textContent = `Vida: ${pokemon.stats[0].base_stat}`;
+  
+    card.appendChild(spriteContainer);
+    card.appendChild(number);
+    card.appendChild(name);
+    card.appendChild(height);
+    card.appendChild(weight);
+    card.appendChild(hp);
+
+    pokemonContainer.appendChild(card);
 }
 
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
-}
-
-function newCursor() {
-    noStroke();
-    fill(255);
-    ellipse(pmouseX, pmouseY, 10, 10);
-}
-
-async function getPokemonList(){
-    const POKEAPI_LIST_URL = 'https://pokeapi.co/api/v2/pokemon?limit=10&offset=0'
-    const query = await fetch(POKEAPI_LIST_URL);
-    const data = await query.json();
-    const { results } = data;
-
-    let pokemon = results[0];
-    let temporaryArray = pokemon.url.split('/');
-    pokemon.sprite =  SPRITE_PATH_URL + temporaryArray[6] + '.png';
-    loadImage(pokemon.sprite, image => {
-        pokemon.pImage = image;
-        console.log(pokemon);
-        bulbasaur = pokemon;
-    });
-
-}
+fetchPokemons(9);
